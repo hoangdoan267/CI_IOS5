@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A86783331D819F5300263181 /* bullet.png in Resources */ = {isa = PBXBuildFile; fileRef = A86783321D819F5300263181 /* bullet.png */; };
+		A86783351D81A5F000263181 /* plane1.png in Resources */ = {isa = PBXBuildFile; fileRef = A86783341D81A5F000263181 /* plane1.png */; };
 		A8A0548C1D7C6D23000A3DC2 /* CGPointUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8A0548B1D7C6D23000A3DC2 /* CGPointUtil.swift */; };
 		A8D96CA91D731D1B003BB063 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D96CA81D731D1B003BB063 /* AppDelegate.swift */; };
 		A8D96CAB1D731D1B003BB063 /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = A8D96CAA1D731D1B003BB063 /* GameScene.sks */; };
@@ -21,6 +23,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A86783321D819F5300263181 /* bullet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bullet.png; sourceTree = "<group>"; };
+		A86783341D81A5F000263181 /* plane1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = plane1.png; sourceTree = "<group>"; };
 		A8A0548B1D7C6D23000A3DC2 /* CGPointUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPointUtil.swift; sourceTree = "<group>"; };
 		A8D96CA51D731D1B003BB063 /* Session1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Session1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8D96CA81D731D1B003BB063 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -76,6 +80,8 @@
 			children = (
 				A8A0548A1D7C6CD7000A3DC2 /* Ultilities */,
 				A8D96CC21D73373E003BB063 /* plane3.png */,
+				A86783341D81A5F000263181 /* plane1.png */,
+				A86783321D819F5300263181 /* bullet.png */,
 				A8D96CBE1D7327CF003BB063 /* 1945-logo.png */,
 				A8D96CC01D733267003BB063 /* background.png */,
 				A8D96CA81D731D1B003BB063 /* AppDelegate.swift */,
@@ -149,10 +155,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				A8D96CAB1D731D1B003BB063 /* GameScene.sks in Resources */,
+				A86783351D81A5F000263181 /* plane1.png in Resources */,
 				A8D96CC11D733267003BB063 /* background.png in Resources */,
 				A8D96CB71D731D1B003BB063 /* LaunchScreen.storyboard in Resources */,
 				A8D96CB41D731D1B003BB063 /* Assets.xcassets in Resources */,
 				A8D96CB21D731D1B003BB063 /* Main.storyboard in Resources */,
+				A86783331D819F5300263181 /* bullet.png in Resources */,
 				A8D96CC31D73373E003BB063 /* plane3.png in Resources */,
 				A8D96CBF1D7327CF003BB063 /* 1945-logo.png in Resources */,
 			);
