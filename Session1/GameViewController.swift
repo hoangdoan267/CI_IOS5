@@ -22,11 +22,11 @@ class GameViewController: UIViewController {
         
         //2 Create Game Scene
         print("2")
-        let gameScene = GameScene(size: skView.frame.size)
+        let menuScene = GameMenu(size: skView.frame.size)
         
         //3 Present Game Scene
         print("3")
-        skView.presentScene(gameScene)
+        skView.presentScene(menuScene)
 
 //        if let scene = GameScene(fileNamed:"GameScene") {
 //            // Configure the view.

@@ -8,135 +8,236 @@
 
 import SpriteKit
 
-class GameScene: SKScene {
-    var plane: SKSpriteNode!
-    var bullets : [SKSpriteNode] = []
-    var enemies : [SKSpriteNode] = []
-    var lastTimeUpdate : NSTimeInterval = -1
-    var bulletTime = 0
-    var enemyTime = 0
+class GameScene: SKScene, SKPhysicsContactDelegate {
+    
+    // Nodes
+//    var plane:SKSpriteNode!
+    
+    //
+    var lastUpdateTime : NSTimeInterval = -1
+    
+    // Counters
+    var bulletIntervalCount = 0
+    var enemyIntervalCount = 0
+    var playerPlaneController : PlayerPlaneController!
+    var enemyPlaneController : EnemyPlaneController!
+    
+    
     
     override func didMoveToView(view: SKView) {
+        configurePhysics()
         addBackground()
         addPlane()
-        addEnemy()
-        
+        addEnemy(4)
+        addPowerUp(8)
     }
     
-    func addBackground() {
+    func configurePhysics() {
         //1
-        let background = SKSpriteNode(imageNamed: "background.png")
-        //2
-        background.anchorPoint = CGPointZero
-        background.position = CGPointZero
-        //3
-        addChild(background)
+        self.physicsWorld.gravity = CGVector(dx: 0, dy: 0);
+        self.physicsWorld.contactDelegate = self
         
-    }
-    
-    func addPlane() {
-        plane = SKSpriteNode(imageNamed: "plane3.png")
-        plane.position = CGPoint(x: self.frame.size.width/2, y: self.frame.size.height/2)
         
-        let shot = SKAction.runBlock {
-            self.addBullet()
-        }
-        let periodShot = SKAction.sequence([shot, SKAction.waitForDuration(0.3)])
+    }    
+  
+    func didBeginContact(contact: SKPhysicsContact) {
+        let bodyA = contact.bodyA
+        let bodyB = contact.bodyB
         
-        let shotForever = SKAction.repeatActionForever(periodShot)
+        let nodeA = bodyA.node
+        let nodeB = bodyB.node
+        
+        let maskA = bodyA.categoryBitMask
+        let maskB = bodyB.categoryBitMask
+        
+        if ((maskA | maskB) == (PHYSICS_MASK_ENEMY | PHYSICS_MASK_PLAYER)) || ((maskA | maskB) == (PHYSICS_MASK_ENEMY | PHYSICS_MASK_PLAYER_BULLET)) || ((maskA | maskB) == (PHYSICS_MASK_PLAYER | PHYSICS_MASK_ENEMY_BULLET)){
+            
+            if let emitter = SKEmitterNode(fileNamed: "explosion.sks") {
+                emitter.position = (bodyB.node?.position)!
+                self.runAction(SKAction.sequence([
+                    SKAction.runBlock { self.addChild(emitter) },
+                    SKAction.waitForDuration(0.5),
+                    SKAction.runBlock { emitter.removeFromParent()}
+                    
+                    ]))
+                
+                
+            }
+            nodeA?.removeFromParent()
+            nodeB?.removeFromParent()
 
-        plane.runAction(shotForever)
-        
-        addChild(plane)
-    }
-    
-    func addBullet() {
-        let bullet = SKSpriteNode(imageNamed: "bullet.png")
-        
-        bullet.position.x = plane.position.x
-        bullet.position.y = plane.position.y + plane.size.height
-        
-        let fly = SKAction.moveByX(0, y: 20, duration: 0.05)
-        bullet.runAction(SKAction.repeatActionForever(fly))
-        
-        addChild(bullet)
-        bullets.append(bullet)
-    }
-    
-    func addEnemy() {
-        let add = SKAction.runBlock{
-            let enemy = SKSpriteNode(imageNamed: "plane1.png")
-            
-            enemy.position.x = self.frame.width/2
-            enemy.position.y = self.frame.height
-            
-            let move = SKAction.moveByX(0, y: -15, duration: 0.1)
-            enemy.runAction(SKAction.repeatActionForever(move))
-            
-            self.addChild(enemy)
-            self.enemies.append(enemy)
+        } else if (maskA | maskB) == (PHYSICS_MASK_PLAYER | PHYSICS_MASK_POWERUP) {
+            if maskA == PHYSICS_MASK_POWERUP {
+                nodeA?.removeFromParent()
+            } else {
+                nodeB?.removeFromParent()
+            }
+            playerPlaneController.changeBullet(self, bulletType: DOUBLE_BULLET_TYPE)
         }
         
-        let enemyPeriod = SKAction.sequence([add, SKAction.waitForDuration(5)])
-        self.runAction(SKAction.repeatActionForever(enemyPeriod))
+    }
+    
+    func didEndContact(contact: SKPhysicsContact) {
         
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        /* Called when a touch begins */
-        
+        print("touchesBegan")
+        // 1
+
     }
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
-
+        print("touchesMoved")
+        print("touches count: \(touches.count)")
         if let touch = touches.first {
-            let currentTouch = touch.locationInNode(self)
-            let previousTouch = touch.previousLocationInNode(self)
+            // 1
+            let currentTouchPosition = touch.locationInNode(self)
+            let previousTouchPosition = touch.previousLocationInNode(self)
             
-            plane.position = currentTouch.subtract(previousTouch).add(plane.position)
-            
-            
-            if(plane.position.x < 0) {
-                plane.position.x = 0
-            }
-            
-            if (plane.position.x > self.frame.width) {
-                plane.position.x = self.frame.width
-            }
-            
-            if (plane.position.y - plane.size.height/2 < 0 || plane.position.y - plane.size.height/2 == 0  ) {
-                plane.position.y = plane.size.height/2
-            }
-            
-            if (plane.position.y + plane.size.height/2 > self.frame.height) {
-                plane.position.y = self.frame.height - plane.size.height/2
-            }
+            playerPlaneController.moveBy(currentTouchPosition.subtract(previousTouchPosition))
             
             
             
+//            if(playerPlaneController.view.position.x < 0) {
+//                playerPlaneController.view.position.x = 0
+//            }
+//            
+//            if (playerPlaneController.view.position.x > self.frame.width) {
+//                playerPlaneController.view.position.x = self.frame.width
+//            }
+//            
+//            if (playerPlaneController.view.position.y - playerPlaneController.view.size.height/2 < 0 || playerPlaneController.view.position.y - playerPlaneController.view.size.height/2 == 0  ) {
+//                playerPlaneController.view.position.y = playerPlaneController.view.size.height/2
+//            }
+//            
+//            if (playerPlaneController.view.position.y + playerPlaneController.view.size.height/2 > self.frame.height) {
+//                playerPlaneController.view.position.y = self.frame.height - playerPlaneController.view.size.height/2
+//            }
         }
     }
     
-    
-    override func update(currentTime: CFTimeInterval) {
-        /* Called before each frame is rendered */
+    override func update(currentTime: NSTimeInterval) {
+        print("\(currentTime)")
         
-     
-        for (bulletIndex ,bullet) in bullets.enumerate() {
-            for (enemyIndex ,enemy) in enemies.enumerate() {
-                let bulletFrame = bullet.frame
-                let enemyFrame = enemy.frame
-                
-                if CGRectIntersectsRect(bulletFrame, enemyFrame) {
-                    bullet.removeFromParent()
-                    enemy.removeFromParent()
-                    
-                    enemies.removeAtIndex(enemyIndex)
-                    bullets.removeAtIndex(bulletIndex)
-                }
+//        self.enumerateChildNodesWithName("enemy") {
+//            enemyNode, _ in
+//            self.enumerateChildNodesWithName("bullet") {
+//                bulletNode, _ in
+//                let bulletFrame = bulletNode.frame
+//                let enemyFrame = enemyNode.frame
+//                
+//                // 2
+//                if CGRectIntersectsRect(bulletFrame, enemyFrame) {
+//                    // 3
+//                    bulletNode.removeFromParent()
+//                    enemyNode.removeFromParent()
+//                    
+//                }
+//            }
+//        }
+    }
+    
+    func addEnemy(spawnRate: NSTimeInterval) {
+        
+        // create enemy
+        
+        let enemySpawn = SKAction.runBlock{
+            // create
+            let enemyView = View(imageNamed: "enemy_plane_white_1")
+            enemyView.size = CGSize(width: 50, height: 50)
+            
+            // position
+            let positionX = CGFloat(arc4random_uniform(UInt32(self.frame.maxX - enemyView.frame.width))) + enemyView.frame.width/2
+            
+            enemyView.position = CGPoint(x: positionX, y: self.frame.maxY)
+            
+            // animate
+            var textures = [SKTexture]()
+            let nameFormat = "enemy_plane_white_"
+            for i in 1...3 {
+                let nameImage = nameFormat + String(i)
+                let texture = SKTexture(imageNamed: nameImage)
+                textures.append(texture)
             }
+            
+            let animate = SKAction.animateWithTextures(textures, timePerFrame: 0.017)
+            enemyView.runAction(SKAction.repeatActionForever(animate))
+            
+            // addController
+            let enemyPlaneController = EnemyPlaneController(view: enemyView)
+            enemyPlaneController.setup(self)
+            
+            //
+            self.addChild(enemyView)
         }
         
-   }
-}
+        let enemyAction = SKAction.sequence([enemySpawn, SKAction.waitForDuration(spawnRate)])
+        
+        self.runAction(SKAction.repeatActionForever(enemyAction))
+        
+    }
+    
 
+    
+    func addBackground() {
+        // 1
+        let background = SKSpriteNode(imageNamed: "background.png")
+        
+        // 2
+        background.anchorPoint = CGPointZero
+        background.position = CGPointZero
+        
+        // 3
+        addChild(background)
+    }
+    
+    func addPlane() {
+        // 1
+        let planeView = View(imageNamed: "plane3.png")
+        
+        // 2
+        planeView.position = CGPoint(x: self.frame.size.width/2, y: self.frame.size.height/2)
+        
+//        // 3
+//        let shot = SKAction.runBlock {
+//            self.addBullet()
+//        }
+        
+        self.playerPlaneController = PlayerPlaneController(view: planeView)
+        self.playerPlaneController.setup(self)
+//        
+//        let periodShot = SKAction.sequence([shot, SKAction.waitForDuration(0.3)])
+//        let shotForever = SKAction.repeatActionForever(periodShot)
+//        
+//        
+//        // 4
+//        plane.runAction(shotForever)
+        
+        // 5
+        addChild(planeView)
+    }
+    
+    
+    func addPowerUp(spawnRate: NSTimeInterval) {
+        
+        let powerUpSpawn = SKAction.runBlock {
+            
+            let powerUpView = View(imageNamed: "power-up.png")
+            
+            let positionX = CGFloat(arc4random_uniform(UInt32(self.frame.maxX - powerUpView.frame.width))) + powerUpView.frame.width/2
+            
+            powerUpView.position = CGPoint(x: positionX, y: self.frame.height)
+            
+            let powerUpController = PowerUpController(view: powerUpView)
+            
+            powerUpController.setup(self)
+            
+            self.addChild(powerUpView)
+        }
+        
+        let powerUpAction = SKAction.sequence([SKAction.waitForDuration(spawnRate), powerUpSpawn])
+        self.runAction(SKAction.repeatActionForever(powerUpAction))
+    }
+    
+}
